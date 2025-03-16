@@ -9,10 +9,8 @@
     "deploy": "aws --profile caleb s3 sync ./dist s3://patmacscopperworks.com --exclude '*.gz' --delete"
   },
   "dependencies": {
-    "@vue/composition-api": "^1.7.0",
     "axios": "^0.27.2",
     "core-js": "^3.6.5",
-    "pinia": "^2.0.18",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuetify": "^2.2.11"

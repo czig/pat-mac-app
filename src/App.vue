@@ -18,8 +18,6 @@
         <v-btn text to="/blog" router v-if="!$vuetify.breakpoint.xsOnly">Blog</v-btn> 
         <v-btn text to="/gallery" router v-if="!$vuetify.breakpoint.xsOnly">Gallery</v-btn> 
         <v-btn text to="/contact" router v-if="!$vuetify.breakpoint.xsOnly">Contact Us</v-btn> 
-        <!--<v-btn text to="/login" router v-if="!$vuetify.breakpoint.xsOnly && !store.loggedIn">Login</v-btn> -->
-        <!--<v-btn text to="/account" router v-if="!$vuetify.breakpoint.xsOnly && store.loggedIn">Account</v-btn> -->
 
     </v-app-bar>
 
@@ -56,13 +54,10 @@
 </template>
 
 <script>
-import { useStore } from '@/stores/main'
-
 export default {
   name: 'App',
   data: () => ({
     drawer: false, 
-    store: useStore(),
   }),
   metaInfo() {
       return {
