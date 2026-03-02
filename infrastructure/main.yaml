@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Pat Mac Copper Works - root stack for image management infrastructure
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues: [prod, staging]
+
+  # Existing resources (passed as parameters — not created here)
+  CognitoUserPoolId:
+    Type: String
+    Description: Existing Cognito User Pool ID
+  CognitoUserPoolArn:
+    Type: String
+    Description: Existing Cognito User Pool ARN
+  S3BucketName:
+    Type: String
+    Description: Existing S3 bucket name (patmacscopperworks.com)
+  CloudFrontDistributionId:
+    Type: String
+    Description: Existing CloudFront distribution ID
+
+  # Deployment config
+  DeploymentBucket:
+    Type: String
+    Description: S3 bucket containing Lambda functions.zip
+  FunctionsZipKey:
+    Type: String
+    Default: functions.zip
+  AllowedOrigin:
+    Type: String
+    Default: https://patmacscopperworks.com
+
+Resources:
+  DynamoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${DeploymentBucket}/infrastructure/dynamodb.yaml
+      Parameters:
+        Environment: !Ref Environment
+
+  IamStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: DynamoStack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${DeploymentBucket}/infrastructure/iam.yaml
+      Parameters:
+        DynamoTableArn: !GetAtt DynamoStack.Outputs.TableArn
+        S3BucketName: !Ref S3BucketName
+
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: IamStack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${DeploymentBucket}/infrastructure/lambda.yaml
+      Parameters:
+        Environment: !Ref Environment
+        DynamoTableName: !GetAtt DynamoStack.Outputs.TableName
+        S3BucketName: !Ref S3BucketName
+        LambdaRoleArn: !GetAtt IamStack.Outputs.LambdaRoleArn
+        DeploymentBucket: !Ref DeploymentBucket
+        FunctionsZipKey: !Ref FunctionsZipKey
+        AllowedOrigin: !Ref AllowedOrigin
+
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: LambdaStack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${DeploymentBucket}/infrastructure/api-gateway.yaml
+      Parameters:
+        Environment: !Ref Environment
+        CognitoUserPoolArn: !Ref CognitoUserPoolArn
+        GetImagesFunctionArn: !GetAtt LambdaStack.Outputs.GetImagesFunctionArn
+        CreateImageFunctionArn: !GetAtt LambdaStack.Outputs.CreateImageFunctionArn
+        ConfirmUploadFunctionArn: !GetAtt LambdaStack.Outputs.ConfirmUploadFunctionArn
+        DeleteImageFunctionArn: !GetAtt LambdaStack.Outputs.DeleteImageFunctionArn
+        ReorderImagesFunctionArn: !GetAtt LambdaStack.Outputs.ReorderImagesFunctionArn
+        AllowedOrigin: !Ref AllowedOrigin
+
+  CloudFrontHeadersStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${DeploymentBucket}/infrastructure/cloudfront-headers.yaml
+      Parameters:
+        CloudFrontDistributionId: !Ref CloudFrontDistributionId
+
+Outputs:
+  ApiUrl:
+    Value: !GetAtt ApiStack.Outputs.ApiUrl
+  DynamoTableName:
+    Value: !GetAtt DynamoStack.Outputs.TableName
+  SecurityHeadersPolicyId:
+    Value: !GetAtt CloudFrontHeadersStack.Outputs.SecurityHeadersPolicyId

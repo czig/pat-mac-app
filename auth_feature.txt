@@ -1,0 +1,14 @@
+# NEW FEATURE REQUESTS: Authentication and Admin Management
+
+## Authentication
+Login will be performed with Amazon Cognito auth. This has been partially implemented. Complete the implementation following security best practices.
+
+## Admin Management
+Administrators should be able to log into the app to perform the following admin functions:
+- Upload images and their metadata, such as title and alt description
+- Remove images
+- Change image order in the gallery 
+- Blog posts (not yet, but in a future feature request)
+
+To do this, images will need to be fetched from an AWS S3 bucket at load time rather than being stored as static assets with the app bundle. Additionally, metadata will need to be fetched from DynamoDB.
+

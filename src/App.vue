@@ -13,11 +13,13 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
 
-        <v-btn text to="/" router v-if="!$vuetify.breakpoint.xsOnly">Home</v-btn> 
-        <v-btn text to="/about" router v-if="!$vuetify.breakpoint.xsOnly">About</v-btn> 
-        <v-btn text to="/blog" router v-if="!$vuetify.breakpoint.xsOnly">Blog</v-btn> 
-        <v-btn text to="/gallery" router v-if="!$vuetify.breakpoint.xsOnly">Gallery</v-btn> 
-        <v-btn text to="/contact" router v-if="!$vuetify.breakpoint.xsOnly">Contact Us</v-btn> 
+        <v-btn text to="/" router v-if="!$vuetify.breakpoint.xsOnly">Home</v-btn>
+        <v-btn text to="/about" router v-if="!$vuetify.breakpoint.xsOnly">About</v-btn>
+        <v-btn text to="/blog" router v-if="!$vuetify.breakpoint.xsOnly">Blog</v-btn>
+        <v-btn text to="/gallery" router v-if="!$vuetify.breakpoint.xsOnly">Gallery</v-btn>
+        <v-btn text to="/contact" router v-if="!$vuetify.breakpoint.xsOnly">Contact Us</v-btn>
+        <v-btn text to="/admin" router v-if="!$vuetify.breakpoint.xsOnly && $store.getters['auth/isAuthenticated']">Admin</v-btn>
+        <v-btn text v-if="!$vuetify.breakpoint.xsOnly && $store.getters['auth/isAuthenticated']" @click="signOut">Sign Out</v-btn>
 
     </v-app-bar>
 
@@ -41,6 +43,12 @@
                 <v-list-item to="/contact">
                     <v-list-item-title>Contact Us</v-list-item-title>
                 </v-list-item>
+                <v-list-item v-if="$store.getters['auth/isAuthenticated']" to="/admin">
+                    <v-list-item-title>Admin</v-list-item-title>
+                </v-list-item>
+                <v-list-item v-if="$store.getters['auth/isAuthenticated']" @click="signOut">
+                    <v-list-item-title>Sign Out</v-list-item-title>
+                </v-list-item>
             </v-list-item-group>
         </v-list>
 
@@ -57,7 +65,7 @@
 export default {
   name: 'App',
   data: () => ({
-    drawer: false, 
+    drawer: false,
   }),
   metaInfo() {
       return {
@@ -65,6 +73,12 @@ export default {
               {name: 'description', content: "Pat Mac's Copper Works is a website devoted to Pat Mac's copper art! If you like copper art, this is the place for you!"},
           ]
       }
+  },
+  methods: {
+    signOut() {
+      this.$store.dispatch('auth/signOut');
+      this.$router.push('/login');
+    }
   }
 };
 </script>

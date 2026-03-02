@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import store from '@/stores/main'
 
 import home from '@/components/home'
 import about from '@/components/about'
@@ -35,10 +36,36 @@ const routes = [
     name: 'contact',
     component: contact,
   },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/components/login.vue')
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/components/admin/AdminDashboard.vue'),
+    meta: { requiresAuth: true }
+  }
 ]
 
 const router = new VueRouter({
   routes
+})
+
+router.beforeEach(async (to, from, next) => {
+  if (to.name === 'login' && store.getters['auth/isAuthenticated']) {
+    return next({ name: 'admin' })
+  }
+  if (!to.meta.requiresAuth) {
+    return next()
+  }
+  if (!store.state.auth.initialized) {
+    await store.dispatch('auth/initAuth')
+  }
+  store.getters['auth/isAuthenticated']
+    ? next()
+    : next({ name: 'login', query: { redirect: to.fullPath } })
 })
 
 export default router

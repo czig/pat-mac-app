@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda functions for Pat Mac image management
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+  DynamoTableName:
+    Type: String
+  S3BucketName:
+    Type: String
+  LambdaRoleArn:
+    Type: String
+  DeploymentBucket:
+    Type: String
+  FunctionsZipKey:
+    Type: String
+    Default: functions.zip
+  AllowedOrigin:
+    Type: String
+    Default: https://patmacscopperworks.com
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        DYNAMODB_TABLE: !Ref DynamoTableName
+        S3_BUCKET: !Ref S3BucketName
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+Resources:
+  GetImagesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub patmac-getImages-${Environment}
+      Handler: getImages.handler
+      Role: !Ref LambdaRoleArn
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref DynamoTableName
+          S3_BUCKET: !Ref S3BucketName
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref FunctionsZipKey
+
+  CreateImageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub patmac-createImage-${Environment}
+      Handler: createImage.handler
+      Role: !Ref LambdaRoleArn
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref DynamoTableName
+          S3_BUCKET: !Ref S3BucketName
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref FunctionsZipKey
+
+  ConfirmUploadFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub patmac-confirmUpload-${Environment}
+      Handler: confirmUpload.handler
+      Role: !Ref LambdaRoleArn
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref DynamoTableName
+          S3_BUCKET: !Ref S3BucketName
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref FunctionsZipKey
+
+  DeleteImageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub patmac-deleteImage-${Environment}
+      Handler: deleteImage.handler
+      Role: !Ref LambdaRoleArn
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref DynamoTableName
+          S3_BUCKET: !Ref S3BucketName
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref FunctionsZipKey
+
+  ReorderImagesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub patmac-reorderImages-${Environment}
+      Handler: reorderImages.handler
+      Role: !Ref LambdaRoleArn
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref DynamoTableName
+          S3_BUCKET: !Ref S3BucketName
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref FunctionsZipKey
+
+Outputs:
+  GetImagesFunctionArn:
+    Value: !GetAtt GetImagesFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-GetImagesFunctionArn
+  CreateImageFunctionArn:
+    Value: !GetAtt CreateImageFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-CreateImageFunctionArn
+  ConfirmUploadFunctionArn:
+    Value: !GetAtt ConfirmUploadFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ConfirmUploadFunctionArn
+  DeleteImageFunctionArn:
+    Value: !GetAtt DeleteImageFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-DeleteImageFunctionArn
+  ReorderImagesFunctionArn:
+    Value: !GetAtt ReorderImagesFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ReorderImagesFunctionArn

@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFront security response headers policy for Pat Mac
+
+Parameters:
+  CloudFrontDistributionId:
+    Type: String
+    Description: Existing CloudFront distribution ID to associate the headers policy with
+
+Resources:
+  SecurityHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: patmac-security-headers
+        Comment: Security headers for patmacscopperworks.com
+        SecurityHeadersConfig:
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 31536000
+            IncludeSubdomains: true
+            Override: true
+          ContentSecurityPolicy:
+            # unsafe-inline is required for Vue 2 compiled templates
+            ContentSecurityPolicy: "default-src 'self'; img-src 'self' https://patmacscopperworks.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+
+Outputs:
+  SecurityHeadersPolicyId:
+    Value: !Ref SecurityHeadersPolicy
+    Description: >
+      Attach this policy ID to your CloudFront distribution's default cache behavior
+      via the console or CLI:
+        aws cloudfront get-distribution-config --id DISTRIBUTION_ID
+        (set ResponseHeadersPolicyId on the DefaultCacheBehavior, then update-distribution)
+    Export:
+      Name: !Sub ${AWS::StackName}-SecurityHeadersPolicyId

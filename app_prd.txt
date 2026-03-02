@@ -1,0 +1,32 @@
+# Pat-Mac-App PRD
+
+This is a website to be used for showcasing Patrick's copperwork.
+
+## Design Considerations
+- Peak traffic rate: 10 req/sec
+- Max daily traffic: 1000 req/day
+- Cost savings is more important than scalability
+- It is acceptable for the app to be unavailable for some time rather than scaling out and accruing more cost
+
+## Features
+- Home: welcome page
+- About: about page
+- Gallery: page to see all the photos
+- (not yet implemented) Blog: page of running blog posts created by administrators
+- (in progress) Login: page for admin login
+- (in progress) Admin management
+    - Upload new photos or videos to the gallery
+    - (not yet implemented) Create a new blog post
+
+## Requirements 
+- MUST use AWS
+- MUST follow AWS best practices and well-architected framework
+- MUST spend less than $50/month on AWS, after which services should degrade
+- MUST follow product security best practices, such as no injections, rate limiting, etc.
+- SHOULD use S3 for image/video storage or recommend cheaper and more performant alternative
+- SHOULD use DynamoDB tables for storing metadata and blog posts or recommend cheaper and more performant alternative
+- SHOULD use AWS Lambdas for server-side functioality or recommend cheaper and more performant alternative
+- MUST use Amazon Cognito for auth
+- MUST use CloudFront to serve HTTPS, provide best service, and provide security protections 
+- MUST use AWS CloudFormation Templates for deploying AWS resources
+- MUST provide and support a way for testing the full app, to include AWS resources, in a local dev environment

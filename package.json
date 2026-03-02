@@ -6,14 +6,18 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
-    "deploy": "aws --profile caleb s3 sync ./dist s3://patmacscopperworks.com --exclude '*.gz' --delete"
+    "deploy": "aws --profile caleb s3 sync ./dist s3://patmacscopperworks.com --exclude '*.gz' --delete",
+    "local-server": "node local-dev/local-server.js"
   },
   "dependencies": {
+    "amazon-cognito-identity-js": "^6.3.7",
     "axios": "^0.27.2",
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
-    "vuetify": "^2.2.11"
+    "vuedraggable": "^2.24.3",
+    "vuetify": "^2.2.11",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@mdi/font": "^7.0.96",

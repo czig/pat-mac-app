@@ -16,6 +16,7 @@ pnpm-debug.log*
 # Editor directories and files
 .idea
 .vscode
+.claude
 *.suo
 *.ntvs*
 *.njsproj
@@ -29,3 +30,7 @@ pnpm-debug.log*
 
 #videos
 *.mp4
+
+# environment files with real credentials
+.env
+infrastructure/parameters.json

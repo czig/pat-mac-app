@@ -1,0 +1,10 @@
+[
+  { "ParameterKey": "Environment", "ParameterValue": "prod" },
+  { "ParameterKey": "CognitoUserPoolId", "ParameterValue": "us-east-1_REPLACE_ME" },
+  { "ParameterKey": "CognitoUserPoolArn", "ParameterValue": "arn:aws:cognito-idp:us-east-1:ACCOUNT_ID:userpool/us-east-1_REPLACE_ME" },
+  { "ParameterKey": "S3BucketName", "ParameterValue": "patmacscopperworks.com" },
+  { "ParameterKey": "CloudFrontDistributionId", "ParameterValue": "REPLACE_ME" },
+  { "ParameterKey": "DeploymentBucket", "ParameterValue": "REPLACE_ME_DEPLOYMENT_BUCKET" },
+  { "ParameterKey": "FunctionsZipKey", "ParameterValue": "functions.zip" },
+  { "ParameterKey": "AllowedOrigin", "ParameterValue": "https://patmacscopperworks.com" }
+]

@@ -8,18 +8,16 @@
                    small
                    absolute
                    right
-                   @click.stop = "dialog = false">
-                <v-icon>mdi-close</v-icon> 
+                   @click.stop="dialog = false">
+                <v-icon>mdi-close</v-icon>
             </v-btn>
-            <v-img :src="dialogImage.src" 
-                   contain
-                   >
-                <template v-slot:placeholder> 
+            <v-img :src="dialogImage.src"
+                   contain>
+                <template v-slot:placeholder>
                     <v-row
                         class="fill-height ma-0"
                         align="center"
-                        justify="center"
-                        >
+                        justify="center">
                         <v-progress-circular indeterminate
                                              color="grey lighten-5">
                         </v-progress-circular>
@@ -28,27 +26,33 @@
             </v-img>
         </v-card>
     </v-dialog>
-    <v-row class="mt-3">
-        <v-col v-for="(image,i) in images"
+
+    <v-alert v-if="error" type="error" class="mt-3">
+      Failed to load gallery. Please try again later.
+    </v-alert>
+
+    <v-row v-if="loading" class="mt-3" justify="center">
+      <v-progress-circular indeterminate color="grey lighten-5" size="64" />
+    </v-row>
+
+    <v-row v-if="!loading && !error" class="mt-3">
+        <v-col v-for="(image, i) in images"
                :key="i"
                class="d-flex child-flex"
-               :cols="$vuetify.breakpoint.name == 'xs' ? 12 : 4"
-               >
+               :cols="$vuetify.breakpoint.name == 'xs' ? 12 : 4">
                <v-hover v-slot="{ hover }">
                    <v-card :class="`elevation-${hover ? 12 : 2}`"
                             style="cursor: pointer"
-                            @click="showDialog(image)"
-                           >
-                    <v-img :src="image.src" 
+                            @click="showDialog(image)">
+                    <v-img :src="image.src"
                            aspect-ratio="1"
                            class="grey lighten-2"
-                           >
-                        <template v-slot:placeholder> 
+                           :img-props="{ loading: 'lazy' }">
+                        <template v-slot:placeholder>
                             <v-row
                                 class="fill-height ma-0"
                                 align="center"
-                                justify="center"
-                                >
+                                justify="center">
                                 <v-progress-circular indeterminate
                                                      color="grey lighten-5">
                                 </v-progress-circular>
@@ -56,7 +60,7 @@
                         </template>
                     </v-img>
                         <v-card-title class="align-center justify-center text-subtitle-1">
-                            {{image.title}} 
+                            {{ image.title }}
                         </v-card-title>
                    </v-card>
                </v-hover>
@@ -66,273 +70,39 @@
 </template>
 
 <script>
-  export default {
-    name: 'gallery',
-    data: () => ({
-      dialog: false,
-      dialogImage: {},
-      images: [
-          {
-            src: require('../assets/acorn.jpg'),
-            width: 640,
-            title: "Acorn"
-          },
-          {
-            src: require('../assets/buck.jpg'),
-            width: 640,
-            title: "Buck"
-          },
-          {
-            src: require('../assets/bunnies.jpg'),
-            width: 640,
-            title: "Bunnies"
-          },
-          {
-            src: require('../assets/christmas_ornaments.jpg'),
-            width: 640,
-            title: "Christmas Ornaments"
-          },
-          {
-            src: require('../assets/circles_in_garden.jpg'),
-            width: 640,
-            title: "Landscape Art"
-          },
-          {
-            src: require('../assets/cutouts.jpg'),
-            width: 640,
-            title: "Christmas Tree and Dragonfly cutouts"
-          },
-          {
-            src: require('../assets/dogwood_spray.jpg'),
-            width: 640,
-            title: "Dogwood spray"
-          },
-          {
-            src: require('../assets/dragon_flies.jpg'),
-            width: 640,
-            title: "Dragonflies"
-          },
-          {
-            src: require('../assets/epilepsy_symbol.jpg'),
-            width: 640,
-            title: "Epilepsy Foundation Symbol"
-          },
-          {
-            src: require('../assets/fish.jpg'),
-            width: 640,
-            title: "Trout"
-          },
-          {
-            src: require('../assets/fish_brazed_2.jpg'),
-            width: 640,
-            title: "Trout (brazed)"
-          },
-          {
-            src: require('../assets/fish_brazing.jpg'),
-            width: 640,
-            title: "Trout (brazed)"
-          },
-          {
-            src: require('../assets/fish_working.jpg'),
-            width: 640,
-            title: "Working on the Trout"
-          },
-          {
-            src: require('../assets/landscape_art_2_garage.jpg'),
-            width: 640,
-            title: "Garden Art in Progress"
-          },
-          {
-            src: require('../assets/landscape_art_garden.jpg'),
-            width: 640,
-            title: "Garden Art"
-          },
-          {
-            src: require('../assets/landscape_art_working.jpg'),
-            width: 640,
-            title: "Garden Art in Progress"
-          },
-          {
-            src: require('../assets/landscaping_design.jpg'),
-            width: 640,
-            title: "Garden Art"
-          },
-          {
-            src: require('../assets/maple_leaf_big.jpg'),
-            width: 640,
-            title: "Maple Leaf"
-          },
-          {
-            src: require('../assets/maple_leafs_diag.jpg'),
-            width: 640,
-            title: "Maple Leaves"
-          },
-          {
-            src: require('../assets/maple_leafs.jpg'),
-            width: 800,
-            title: "Maple Leaves"
-          },
-          {
-            src: require('../assets/maple_spray.jpg'),
-            width: 640,
-            title: "Maple Leaf Spray"
-          },
-          {
-            src: require('../assets/maple_spray_mounted.jpg'),
-            width: 640,
-            title: "Maple Leaf Spray Mounted"
-          },
-          {
-            src: require('../assets/pat_mac_sign.jpg'),
-            width: 800,
-            title: "Company Sign!"
-          },
-          {
-            src: require('../assets/patrick.jpg'),
-            width: 640,
-            title: "Me with the Landscape Art base"
-          },
-          {
-            src: require('../assets/torch.jpg'),
-            width: 720,
-            title: "Working on the Landscape Art"
-          },
-          {
-            src: require('../assets/working_fish.jpg'),
-            width: 640,
-            title: "Working on the trout"
-          },
-          {
-            src: require('../assets/working_maple.jpg'),
-            width: 1080,
-            title: "Working on the maple leaf spray"
-          },
-          {
-            src: require('../assets/garden_art.jpg'),
-            width: 1080,
-            title: "Landscape Art outside"
-          },
-          {
-            src: require('../assets/butterfly2.jpg'),
-            width: 1080,
-            title: "Butterfly"
-          },
-          {
-            src: require('../assets/sunflower.jpeg'),
-            width: 640,
-            title: "Sunflower"
-          },
-        //new start
-          {
-            src: require('../assets/seven_flower.jpg'),
-            width: 640,
-            title: "Seven Flower"
-          },
-          {
-            src: require('../assets/dragonfly.jpg'),
-            width: 640,
-            title: "Dragonfly"
-          },
-          {
-            src: require('../assets/dragonfly_grass.jpg'),
-            width: 640,
-            title: "Dragonfly in the Lawn"
-          },
-          {
-            src: require('../assets/fish_curved.jpg'),
-            width: 640,
-            title: "Fish"
-          },
-          {
-            src: require('../assets/fish_patrick.jpg'),
-            width: 640,
-            title: "Me holding the fish"
-          },
-          {
-            src: require('../assets/two_fish.jpg'),
-            width: 640,
-            title: "Two fish"
-          },
-          // second round new
-          {
-            src: require('../assets/ornaments_star_maple.jpg'),
-            width: 1080,
-            title: "Holiday ornaments!"
-          },
-          {
-            src: require('../assets/star_brazed.jpg'),
-            width: 1080,
-            title: "Brazed holiday star"
-          },
-          {
-            src: require('../assets/star_working.jpg'),
-            width: 640,
-            title: "Working on the brazed holiday star"
-          },
-          {
-            src: require('../assets/dogwood_spray2.jpg'),
-            width: 640,
-            title: "Dogwood spray"
-          },
-          {
-            src: require('../assets/landscape_art_circles.jpg'),
-            width: 640,
-            title: "Landscape/garden art"
-          },
-          {
-            src: require('../assets/sunflower_butterfly.jpg'),
-            width: 640,
-            title: "Sunflowers and a butterfly"
-          },
-          {
-            src: require('../assets/trout1.jpg'),
-            width: 640,
-            title: "Me with a completed trout"
-          },
-          {
-            src: require('../assets/trout2.jpg'),
-            width: 640,
-            title: "A completed trout"
-          },
-          {
-            src: require('../assets/trout3.jpg'),
-            width: 640,
-            title: "A completed trout"
-          },
-          {
-            src: require('../assets/turtle.jpg'),
-            width: 1080,
-            title: "Turtles!"
-          },
-          {
-            src: require('../assets/turtle2.jpg'),
-            width: 1080,
-            title: "Turtles!"
-          },
-          {
-            src: require('../assets/sun.jpg'),
-            width: 640,
-            title: "Sun (16in point-to-point)"
-          },
-          {
-            src: require('../assets/butterfly.jpg'),
-            width: 640,
-            title: "Textured Butterfly"
-          },
-          {
-            src: require('../assets/moose.jpg'),
-            width: 1080,
-            title: "Moose"
-          },
-      ],
-    }),
-    methods: {
-        showDialog: function(src) {
-            this.dialog = true
-            this.dialogImage = src
-        }   
-    },
+import imageService from '@/services/images';
+
+export default {
+  name: 'gallery',
+  data: () => ({
+    dialog: false,
+    dialogImage: {},
+    images: [],
+    loading: false,
+    error: false
+  }),
+  async created() {
+    this.loading = true;
+    try {
+      const { data } = await imageService.getImages();
+      this.images = data.images.map(img => ({
+        ...img,
+        src: `${process.env.VUE_APP_CLOUDFRONT_URL}/${img.s3Key}`
+      }));
+    } catch (err) {
+      console.error('Failed to load gallery images:', err);
+      this.error = true;
+    } finally {
+      this.loading = false;
+    }
+  },
+  methods: {
+    showDialog(image) {
+      this.dialog = true;
+      this.dialogImage = image;
+    }
   }
+}
 </script>
 
 <style>
@@ -344,5 +114,4 @@
     -ms-hyphens: auto;
     hyphens: auto;
 }
-
 </style>

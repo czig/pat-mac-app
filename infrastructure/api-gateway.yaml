@@ -1,0 +1,299 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: API Gateway for Pat Mac image management
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+  CognitoUserPoolArn:
+    Type: String
+  GetImagesFunctionArn:
+    Type: String
+  CreateImageFunctionArn:
+    Type: String
+  ConfirmUploadFunctionArn:
+    Type: String
+  DeleteImageFunctionArn:
+    Type: String
+  ReorderImagesFunctionArn:
+    Type: String
+  AllowedOrigin:
+    Type: String
+    Default: https://patmacscopperworks.com
+
+Resources:
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub patmac-api-${Environment}
+      Description: Pat Mac copper works image management API
+
+  CognitoAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: CognitoAuthorizer
+      RestApiId: !Ref RestApi
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      ProviderARNs:
+        - !Ref CognitoUserPoolArn
+
+  # Request validators
+  RequestValidator:
+    Type: AWS::ApiGateway::RequestValidator
+    Properties:
+      RestApiId: !Ref RestApi
+      Name: body-validator
+      ValidateRequestBody: true
+      ValidateRequestParameters: false
+
+  # Models
+  CreateImageModel:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId: !Ref RestApi
+      ContentType: application/json
+      Name: CreateImageRequest
+      Schema:
+        "$schema": "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: [title, alt, filename, contentType]
+        properties:
+          title:
+            type: string
+            minLength: 1
+            maxLength: 200
+          alt:
+            type: string
+            minLength: 1
+            maxLength: 500
+          filename:
+            type: string
+            minLength: 1
+          contentType:
+            type: string
+            pattern: "^image/"
+
+  ReorderImagesModel:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId: !Ref RestApi
+      ContentType: application/json
+      Name: ReorderImagesRequest
+      Schema:
+        "$schema": "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: [orderedIds]
+        properties:
+          orderedIds:
+            type: array
+            items:
+              type: string
+            minItems: 1
+            maxItems: 100
+
+  # /images resource
+  ImagesResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !GetAtt RestApi.RootResourceId
+      PathPart: images
+
+  # GET /images
+  GetImagesMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !Ref ImagesResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetImagesFunctionArn}/invocations
+
+  # POST /images
+  CreateImageMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !Ref ImagesResource
+      HttpMethod: POST
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      RequestValidatorId: !Ref RequestValidator
+      RequestModels:
+        application/json: !Ref CreateImageModel
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateImageFunctionArn}/invocations
+
+  # /images/reorder resource
+  ReorderResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !Ref ImagesResource
+      PathPart: reorder
+
+  # PUT /images/reorder
+  ReorderImagesMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !Ref ReorderResource
+      HttpMethod: PUT
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      RequestValidatorId: !Ref RequestValidator
+      RequestModels:
+        application/json: !Ref ReorderImagesModel
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ReorderImagesFunctionArn}/invocations
+
+  # /images/{id} resource
+  ImageIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !Ref ImagesResource
+      PathPart: "{id}"
+
+  # PUT /images/{id}/confirm
+  ConfirmResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !Ref ImageIdResource
+      PathPart: confirm
+
+  ConfirmUploadMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !Ref ConfirmResource
+      HttpMethod: PUT
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConfirmUploadFunctionArn}/invocations
+
+  # DELETE /images/{id}
+  DeleteImageMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !Ref ImageIdResource
+      HttpMethod: DELETE
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteImageFunctionArn}/invocations
+
+  # Gateway responses with CORS headers
+  Default4xxResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref RestApi
+      ResponseType: DEFAULT_4XX
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+
+  Default5xxResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref RestApi
+      ResponseType: DEFAULT_5XX
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+
+  # Deployment and stage
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetImagesMethod
+      - CreateImageMethod
+      - ConfirmUploadMethod
+      - DeleteImageMethod
+      - ReorderImagesMethod
+    Properties:
+      RestApiId: !Ref RestApi
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref RestApi
+      DeploymentId: !Ref ApiDeployment
+      StageName: prod
+
+  # Usage plan
+  ApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      UsagePlanName: !Sub patmac-usage-plan-${Environment}
+      ApiStages:
+        - ApiId: !Ref RestApi
+          Stage: !Ref ApiStage
+      Throttle:
+        RateLimit: 10
+        BurstLimit: 20
+      Quota:
+        Limit: 2000
+        Period: DAY
+
+  # Lambda permissions
+  GetImagesPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetImagesFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/GET/images
+
+  CreateImagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateImageFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/POST/images
+
+  ConfirmUploadPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ConfirmUploadFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/images/*/confirm
+
+  DeleteImagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteImageFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/DELETE/images/*
+
+  ReorderImagesPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ReorderImagesFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/PUT/images/reorder
+
+Outputs:
+  ApiUrl:
+    Value: !Sub https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiUrl
