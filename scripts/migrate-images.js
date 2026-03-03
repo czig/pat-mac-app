@@ -15,12 +15,15 @@ const { fromIni } = require('@aws-sdk/credential-providers');
 
 const BUCKET = process.env.S3_BUCKET || 'patmacscopperworks.com';
 const TABLE = process.env.DYNAMODB_TABLE || 'copper-images-prod';
-const REGION = 'us-east-1';
+const REGION = process.env.AWS_DEFAULT_REGION || 'us-east-1';
+const ENDPOINT = process.env.AWS_ENDPOINT_URL;
 const ASSETS_DIR = path.join(__dirname, '..', 'src', 'assets');
 
-const credentials = fromIni({ profile: 'caleb' });
-const s3 = new S3Client({ region: REGION, credentials });
-const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION, credentials }));
+// Use env var credentials (LocalStack) if present, otherwise fall back to 'caleb' profile
+const credentials = process.env.AWS_ACCESS_KEY_ID ? undefined : fromIni({ profile: 'caleb' });
+const clientConfig = { region: REGION, ...(credentials && { credentials }), ...(ENDPOINT && { endpoint: ENDPOINT, forcePathStyle: true }) };
+const s3 = new S3Client(clientConfig);
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient(clientConfig));
 
 // Images in gallery order (from gallery.vue)
 const images = [

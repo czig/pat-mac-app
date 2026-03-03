@@ -7,7 +7,6 @@
 require('dotenv').config({ path: '.env.local' });
 
 const express = require('express');
-const cors = require('cors');
 
 // Point Lambda handlers at LocalStack
 process.env.LOCALSTACK_ENDPOINT = process.env.LOCALSTACK_ENDPOINT || 'http://localhost:4566';
@@ -22,7 +21,6 @@ const deleteImage = require('../backend/deleteImage');
 const reorderImages = require('../backend/reorderImages');
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
 // Simulate API Gateway event shape
