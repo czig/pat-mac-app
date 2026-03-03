@@ -23,6 +23,15 @@ const reorderImages = require('../backend/reorderImages');
 const app = express();
 app.use(express.json());
 
+// Handle CORS preflight requests (triggered by Authorization header on non-simple requests)
+app.options('*', (req, res) => {
+  res.set({
+    'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
+  }).sendStatus(204);
+});
+
 // Simulate API Gateway event shape
 function makeEvent(req) {
   return {
