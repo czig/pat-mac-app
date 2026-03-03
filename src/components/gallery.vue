@@ -1,30 +1,18 @@
 <template>
   <v-container>
-    <v-dialog v-model="dialog"
-              :max-width="$vuetify.breakpoint.name == 'xs' ? $vuetify.breakpoint.width : $vuetify.breakpoint.width*0.4">
-        <v-card>
+    <v-dialog v-model="dialog" max-width="90vw" content-class="image-dialog">
+        <div style="position: relative; line-height: 0;">
             <v-btn fab
                    dark
                    small
                    absolute
                    right
+                   style="z-index: 1;"
                    @click.stop="dialog = false">
                 <v-icon>mdi-close</v-icon>
             </v-btn>
-            <v-img :src="dialogImage.src"
-                   contain>
-                <template v-slot:placeholder>
-                    <v-row
-                        class="fill-height ma-0"
-                        align="center"
-                        justify="center">
-                        <v-progress-circular indeterminate
-                                             color="grey lighten-5">
-                        </v-progress-circular>
-                    </v-row>
-                </template>
-            </v-img>
-        </v-card>
+            <img :src="dialogImage.src" class="dialog-image" />
+        </div>
     </v-dialog>
 
     <v-alert v-if="error" type="error" class="mt-3">
@@ -113,5 +101,15 @@ export default {
     -webkit-hyphens: auto;
     -ms-hyphens: auto;
     hyphens: auto;
+}
+
+.image-dialog {
+    width: auto !important;
+}
+
+.dialog-image {
+    display: block;
+    max-width: 90vw;
+    max-height: 90vh;
 }
 </style>
