@@ -2,7 +2,7 @@
   <v-container class="fill-height" fluid>
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
-        <v-card class="grey darken-3">
+        <v-card>
           <v-card-title class="text-h5 justify-center pb-2 pt-6">
             Admin Sign In
           </v-card-title>
@@ -15,7 +15,6 @@
                 v-model="username"
                 label="Username"
                 outlined
-                dark
                 required
                 autocomplete="username"
               />
@@ -23,7 +22,6 @@
                 v-model="password"
                 label="Password"
                 outlined
-                dark
                 required
                 :type="showPassword ? 'text' : 'password'"
                 autocomplete="current-password"

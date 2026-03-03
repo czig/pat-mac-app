@@ -12,31 +12,35 @@
         v-else
         v-model="images"
         handle=".drag-handle"
-        @end="handleReorder"
+        @end="saveOrder"
       >
-        <v-list-item
+        <v-card
           v-for="image in images"
           :key="image.imageId"
-          class="mb-2 grey darken-3 rounded"
+          outlined
+          elevation="2"
+          class="mb-2"
         >
-          <v-list-item-avatar tile size="64">
-            <v-img :src="imageSrc(image)" />
-          </v-list-item-avatar>
+          <v-list-item>
+            <v-list-item-avatar tile size="64">
+              <v-img :src="imageSrc(image)" />
+            </v-list-item-avatar>
 
-          <v-list-item-content>
-            <v-list-item-title>{{ image.title }}</v-list-item-title>
-            <v-list-item-subtitle>{{ image.alt }}</v-list-item-subtitle>
-          </v-list-item-content>
+            <v-list-item-content>
+              <v-list-item-title>{{ image.title }}</v-list-item-title>
+              <v-list-item-subtitle>{{ image.alt }}</v-list-item-subtitle>
+            </v-list-item-content>
 
-          <v-list-item-action class="flex-row align-center">
-            <v-btn icon class="drag-handle" title="Drag to reorder">
-              <v-icon>mdi-drag-vertical</v-icon>
-            </v-btn>
-            <v-btn icon color="error" @click="confirmDelete(image)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </v-list-item-action>
-        </v-list-item>
+            <v-list-item-action class="flex-row align-center">
+              <v-btn icon class="drag-handle" title="Drag to reorder">
+                <v-icon>mdi-drag-vertical</v-icon>
+              </v-btn>
+              <v-btn icon color="error" @click="confirmDelete(image)">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+        </v-card>
       </draggable>
     </v-card-text>
 
@@ -92,7 +96,7 @@ export default {
         this.loading = false;
       }
     },
-    async handleReorder() {
+    async saveOrder() {
       const orderedIds = this.images.map(img => img.imageId);
       try {
         await imageService.reorderImages(orderedIds);

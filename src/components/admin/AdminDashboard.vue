@@ -9,17 +9,17 @@
       </v-col>
     </v-row>
 
-    <v-tabs v-model="tab" background-color="grey darken-3" dark>
+    <v-tabs v-model="tab" background-color="grey darken-2" dark>
       <v-tab>Upload Image</v-tab>
       <v-tab>Manage Gallery</v-tab>
     </v-tabs>
 
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <ImageUpload @uploaded="tab = 1" />
+        <ImageUpload @uploaded="onUploaded" />
       </v-tab-item>
       <v-tab-item>
-        <ImageManager />
+        <ImageManager ref="manager" />
       </v-tab-item>
     </v-tabs-items>
   </v-container>
@@ -36,6 +36,10 @@ export default {
     tab: 0
   }),
   methods: {
+    onUploaded() {
+      this.tab = 1;
+      this.$nextTick(() => this.$refs.manager.loadImages());
+    },
     signOut() {
       this.$store.dispatch('auth/signOut');
       this.$router.push('/login');

@@ -12,7 +12,10 @@ const { sanitizeFilename, validateImageInput } = require('./shared/validate');
 const TABLE_NAME = process.env.DYNAMODB_TABLE;
 const BUCKET_NAME = process.env.S3_BUCKET;
 
-const s3Config = {};
+const s3Config = {
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  responseChecksumValidation: 'WHEN_REQUIRED'
+};
 if (process.env.LOCALSTACK_ENDPOINT) {
   s3Config.endpoint = process.env.LOCALSTACK_ENDPOINT;
   s3Config.region = 'us-east-1';

@@ -10,7 +10,6 @@
           v-model="title"
           label="Title"
           outlined
-          dark
           required
           :rules="[v => !!v || 'Title is required', v => v.length <= 200 || 'Max 200 characters']"
           counter="200"
@@ -19,7 +18,6 @@
           v-model="alt"
           label="Alt Description"
           outlined
-          dark
           required
           :rules="[v => !!v || 'Alt description is required', v => v.length <= 500 || 'Max 500 characters']"
           counter="500"
@@ -28,7 +26,6 @@
           v-model="file"
           label="Image File"
           outlined
-          dark
           accept="image/*"
           required
           :rules="[v => !!v || 'File is required']"
@@ -104,7 +101,10 @@ export default {
         await imageService.confirmUpload(imageId);
 
         this.success = true;
-        this.$refs.form.reset();
+        this.title = '';
+        this.alt = '';
+        this.file = null;
+        this.$refs.form.resetValidation();
         this.$emit('uploaded');
       } catch (err) {
         console.error('Upload failed:', err);
